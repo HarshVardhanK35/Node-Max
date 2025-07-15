@@ -62,7 +62,60 @@ const arrWithRest = (...args) => {
 const person = {
   name: "Harsha",
 };
-const printName = (personData) => {
-  console.log(personData.name);
+const printName = ({ name }) => {
+  console.log(name);
 };
-printName(person);
+// printName(person);
+
+// array destructuring
+const hobbies = ["programming", "sports"];
+const [hob1, hob2] = hobbies;
+// console.log(hob1, hob2)
+
+// nested async-calls
+const fetchData = (callbackFn) => {
+  setTimeout(() => {
+    callbackFn("Done!");
+  }, 2000);
+};
+
+setTimeout(() => {
+  // console.log("inside setTimeout!");
+  fetchData((text) => {
+    // console.log(text)
+  });
+}, 2000);
+
+// promise
+const fetch = () => {
+  const promise = new Promise((res, rej) => {
+    setTimeout(() => {
+      res("Promises!");
+    }, 1000);
+  });
+  return promise;
+};
+
+// resolving a promise
+setTimeout(() => {
+  // console.log("Inside Timeout");
+  fetch().then((res) => {
+    // console.log(res);
+    return fetch();
+  });
+  // .then((data) => console.log(data));
+}, 2000);
+
+// 1.1 nested callbacks
+const fetchWithCB = (callbackFn) => {
+  setTimeout(() => {
+    callbackFn("Done!");
+  }, 2000);
+};
+
+// 1.2 async handle with callbacks
+setTimeout(() => {
+  fetchWithCB((text) => {
+    console.log(text + " 120");
+  });
+}, 1000);

@@ -108,7 +108,7 @@ res:
  * - map fn transforms an array and return a new array 
  * - which provides a new array but does not manipulate the old array
  * 
- * >>> Arrays, Objects & Reference Types
+ * * Arrays, Objects & Reference Types
  * - objects and arrays are reference type
  * - even the array is defined with "const" that means value does not change [but arrays and objects are reference types]
  *      - so arrays and objects are still be manipulated!
@@ -125,12 +125,12 @@ console.log(hobbyArr);      // => TypeError: Assignment to constant variable.
  * - so, we can change inside of a value.. but cannot change the value that was assigned to that variable totally! 
  * - simply, we are not really editing / changing the value that is inside that constant but we are editing the value that array const is pointing at! 
  * 
- * >>> Understanding Spread & Rest Operators
+ * * Understanding Spread & Rest Operators
  * [spread]
  *      - when we add a new element inside an array, by not editing original array 
  *          - but we create a new array with all old values and the new value that we wanted to store
  * 
- * * IMMUTABILITY
+ * ? IMMUTABILITY
  *      - where we never edit existing values but we replace them with COPIES that we create plus the changes that we want to made!
  * (copy original array and edit the copied array)
  * 
@@ -171,43 +171,123 @@ console.log(arrWithRest(1, 2, 3, 4));
  * - REST is similar to SPREAD.. it makes a diff where we use it defines it!
  * (merge multiple elements / properties into an array / object and using as an argument list of a fn) >>> REST
  * 
- * >>> destructuring
+ * * DESTRUCTURING:
+ * - pulls out values from an array OR an object and creates a new variable on the name of property-key 
+ *      - two types: array and object destructuring
  * [problem]
-const person = {
-  name: "Harsha",
-};
+ * ---------
+const person = { name: "Harsha" }
+
 const printName = (personData) => {
-  console.log(personData.name);         // - 
+  console.log(personData.name);         // - without getting every property from an object we can use: "destructuring"
 };
 printName(person);
  * 
+ * [solution]
+ * ----------
+// >>> destructure inside function
+const person = { name: "Harsha" };      // - just have to destructure only the property-key that we are interested in!
+
+const printName = ({ name }) => {
+  console.log(name);
+};
+printName(person);
+
+// >>> destructure within a variable
+const { personName } = personObj
  * 
+ * $ NOTE
+ * - [key must match with the key that we are pulling out of an object] 
  * 
+// >>> array destructuring
+const hobbies = ["programming", "sports"]
+const [hob1, hob2] = hobbies
+console.log(hob1, hob2)         // - here we are logging off two variables that were created upon destructuring!
+
+res:
+programming sports      // - these are not wrapped around '[]' as we are logging off two variables
  * 
+ * $ SUMMARY:
+ * - we can provide variable names that whatever we want inside ARRAY-DESTRUCTURING 
+ *      - but variable names upon OBJECT-DESTRUCTURING must match the keys of that object
  * 
+ * * Async Code & Promises 
+ * - code that executes after a certain time.. [case: when ever we fetch data from an API]
  * 
+ * >>> setTimeout:
+ * - in-built inside JS which executes a callback-fn (1st arg) after user-specified time (2nd arg)
+ *    - callback-fn will be executed after some time in future [so it will be called later in time]
+ * [syn]
+ * setTimeout(function () {}, 2000)
  * 
+ * [ex]
+ * ----
+setTimeout(function () {
+    console.log("Hello")        // - executed after 2000 milliseconds that is 2 seconds!
+}, 2000)
  * 
+ * - even though we specified 0 milliseconds inside 2nd arg.. fn inside 1st arg will execute "ASYNCHRONOUSLY"
+ * [ex]
+ * ----
+setTimeout(function () {
+    console.log("Hello")
+}, 0)                           // - even though 0 sec were specified.. "Hi" & "From JS!" 1st executed! 
+console.log("Hi")   
+console.log("From JS!")     // - synchronous (line-by-line) execution [even these are below async code with 0 ms.. these executed 1st]
+
+res:
+    Hi
+    From JS!
+    Hello
  * 
+ * * ASYNCHRONOUS:
+ *       - where this type of code does not block the other [opposite to SYNCHRONOUS]!
  * 
+ * >>> ways to handle asynchronous-code
+ * [callback-fn]
+ *    - this is the oldest way of handling asynchronous code 
+ *    - may face problems if we have depending async operations
  * 
+ * PROBLEM #1 [nested async-calls]
+ * ----------
+// >>> nested async-calls
+const fetchData = (callbackFn) => {
+  setTimeout(() => {
+    callbackFn("Done!");
+  }, 2000);
+};
+
+setTimeout(() => {
+  console.log("inside setTimeout!");
+  fetchData((text) => {
+    console.log(text)
+  })
+}, 2000);
  * 
+ * - it gets deeper into callbacks.. to avoid confusion [we use PROMISES]
  * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ * SOLUTION [promises]
+ * --------
+// >>> promises
+const fetchDataWithPromise = () => {
+  const promise = new Promise((res, rej) => {
+    setTimeout(() => {
+      res("Fetched!");
+    }, 2000);
+  });
+  return promise;
+};
+
+// >>> promise-chaining
+setTimeout(() => {
+  console.log("promises");
+  fetchDataWithPromise()
+    .then((data) => {
+      console.log(data);            // - if promise here is not resolved yet.. then return same function
+      return fetchDataWithPromise();  
+    })
+    .then((data2) => console.log(data2));   // - resolve it here using again attaching another "then" 
+}, 2000);
  * 
  * 
  * 
