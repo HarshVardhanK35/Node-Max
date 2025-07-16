@@ -547,8 +547,22 @@ server.listen(8080);
  * - this does not block the code as it was earlier with "writeFileSync"!
  * 
  * 
- * ! 12. Understanding Event Driven Code Execution
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ * ! 12. Node.js - Looking Behind the Scenes
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ * [SINGLE THREADED, EVENT LOOP & NON-BLOCKING CODE]
+ * 
+ * *THREAD
+ *    - a process inside an operating system
+ * 
+ * * EVENT-LOOP
+ *    - started by node.js which keeps on running [this handles all the callbacks]
+ * 
+ * [How event loop prioritize tasks]
+ * - 1st: checks for due-timers (executes setTimeout, setInterval callbacks)
+ * - 2nd: checks for other pending callbacks (executes I/O-related callbacks)
+ * 
+ * => visit JONAS lecture on this callbacks, event loop [JONAS- JS course: udemy]
+ * 
  * 
  * ! 13. Understanding Event Driven Code Execution
  * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
