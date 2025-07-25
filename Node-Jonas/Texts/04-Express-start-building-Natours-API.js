@@ -116,7 +116,11 @@ app.post("/", (req, res) => {
  * [headers means: "Content-Type": "application/json"] >>> if the response is JSON
  * 
  * 
- * ! 3. APIs and RESTful API Design
+ * $ NOTE
+ * - status-code = 200 || 'ok'
+ * 
+ * 
+ * ! 4. APIs and RESTful API Design
  * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
  * (understand API and REST-ful APIs)
  * 
@@ -276,17 +280,834 @@ send(nextPage)
  * - this way of handling states has to be done on CLIENT-side but not on SERVER-side
  * 
  * 
- * ! 4. Starting Our API: Handling GET Requests
+ * ! 5. Starting Our API: Handling GET Requests
  * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
  * 
- * >>> discuss about API
- *      - we gonna build an API [natours project]
+ * * PROJECT: "Natours" application
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ * - 1st API and then we build user-interface
  * 
- * - an application where we can see tours and book them!
- *      - we can create user-accounts and can login into those
- * - we can view different tours and login to book a tour!
+ * [code]
+ * ------
+const fs = require("fs");
+const express = require("express");
+
+const app = express();
+
+const tours = JSON.parse(                                               // #2
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
+);
+
+// >>> GET all-tours
+app.get("/api/v1/tours", (req, res) => {            // #1
+  res.status(200).json({
+    status: "success",              // #3
+    results: tours.length,
+    data: {
+      tours: tours,         // #4
+    },
+  });
+});
+
+const port = 8080;
+app.listen(port, () => {
+  console.log(`server up and running on: ${port}`);
+});
  * 
- * - we gonna build an API for this application and then use pre-defined interface [may be] 
+ * $ EXPLANATION
+ * -------------
+ * # 1.1
+ * - "/api/v1/tours"
+ *      - specifying API version V1 and V2 so on.. 
+ *      - use new versions.. whenever we modify previous version 
+ *      [so that older-versions would not be broken!] >>> when we work on V2.. V1 will not be broken!
+ * 
+ * # 1.2 
+ * - request handler / route handler
+ *      - when we hit the route [/api/v1/tours].. callback fn will be executed
+ *      - every data we send inside callback-fn.. will be sent to "tours" [tours a resource!]
+ * [only request handler that is a callback function.. will run inside event-loop]
+ * 
+ * [inside req-handler we read JSON file from local folders]
+ * # 2.
+ * - JSON.parse()
+ *      - JSON will be converted into javascript objects OR an array of JS objects!
+ * 
+ * # 3.
+ * - res.json({ ... })
+ * * sends a JSON response!
+ *      - we send JSON data with JSend- a JSON formatting standard!
+ *      - inside we specify "status" and "data"
+ *          - data key: used to envelope the data we send!
+ * 
+ * # 4.
+ * [data: {tours: tours} in which "tours" as key is used cause to represent resource inside "/api/v1/tours"]
+ * 
+ * >>> POSTMAN
+ * - as this is used to test routes
+ * - open => create a new collection => inside collection "node-natours" => select "GET" method => enter URL: "localhost:8080/api/v1/tours"
+ *      - click on "send" => we get a response 
+ * [response of what we read from the file!] 
+ * 
+ * $ NOTE
+ * - in future, we send the stored data that is read from DataBase!
+ * 
+ * 
+ * ! 6. Handling POST Requests
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ * (we can send / post data from client to server)
+ * 
+ * [code]
+ * ------
+const fs = require("fs");
+const express = require("express");
+
+const app = express();
+
+// >>> middleware               
+app.use(express.json());        // #2
+
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
+);
+
+// >>> POST create-a-tour
+app.post("/api/v1/tours", (req, res) => {       // #3
+  //
+  const newId = tours[tours.length - 1].id + 1;
+  const newTour = Object.assign({ id: newId }, req.body);       // #1.1 (only req.body)   #1.2 Object.assign(object-1, object-2)
+
+  tours.push(newTour)
+  
+  fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tours), (err) => {        // #4 (JSON.stringify)
+    res.status(201).json({
+      status: "success",    |
+      data: {               | // - sending a response object after creating a TOUR [instead of simply responding "Done"]
+        tour: newTour       |
+      }
+    })
+  })
+});
+
+const port = 8080;
+app.listen(port, () => {
+  console.log(`server up and running on: ${port}`);
+});
+ *
+ * $ EXPLANATION
+ * -------------
+ * # 1. 
+ * ? req.body
+ * [data stored inside request's body: an Object]
+ * - as data sent from client to server.. so data is available inside on the request!
+ *      - inside POST req.. request object holds every data that has to be sent!
+ * 
+ * - but express does not put body data on the request.. in order to have that data inside BODY.. 
+ *      - we have to use "MIDDLEWARE"! 
+ * 
+ * # 2.
+ * * MIDDLEWARE
+ * - to insert a middleware inside an express-application, we use.. 
+ *      >>> app.use(express.json())
+ * 
+ * - here express.json() is a middleware!
+ *      - a function which can modify incoming request-data [from client]! 
+ * 
+ * - it is called MIDDLEWARE
+ *      - cause it stays in between request and response cycle!
+ *      [we talk more about this in later lectures]
+ * 
+ * >>> we used MIDDLEWARE here.. to get access to the request.body
+ * 
+ * ? send data to server and write that same data to the file: "./dev-data/data/tours-simple.json"
+ * # 3.
+ * - request-handler [a-callback-fn]
+ * - on same route that was used to "get-all-tours" [but HTTP method was changed to "POST"]
+ *      [POST: cause here we are creating a new tour and adding it to existing file]
+ * 
+ * - calculating "newId" for new-tour.. based on last object's ID 
+ * const newId = tours[tours.length - 1].id + 1;
+ * 
+ * # 1.1 
+ * ? Object.assign({source-object}, {target-object})
+ *      - takes in a new-source object and target-object
+ * 
+ * const newTour = Object.assign({ id: newId }, req.body);
+ * - this takes in one or more "source-objects" {id: newId} and copies properties to existing "target-object" {req.body}
+ * 
+ * - while creating "newTour" 
+ *      - Object.assign copies 'id' and it's 'value' to "req.body"
+ * 
+ * # 4.
+ * ? JSON.stringify()
+ * - Converts a JavaScript value to a JavaScript Object Notation (JSON) string.
+ *                          [value: can be any JS object or an array]
+ * - here tours is an array of objects
+ *      - this array will be converted into JSON string!
+ * 
+ * ? how to send data through request via 'POSTMAN'
+ * >>> POSTMAN
+ *      - inside existing collection "node-natours" => create another request "POST" => add URL: "localhost:8080/api/v1/tours"
+ *          - we can send data in various ways inside "Body" tab: [none, form-data, x-www-form-urlencoded, raw, binary, graphQL]
+ * [same URL is used to get data and post a data >>> but http methods are diff: "GET" and "POST"]
+ * 
+ * - we can only use "Body" to send a request => select "raw" and inside drop-down select "JSON" format! 
+ * [data-to-send]
+ * --------------
+{
+    "name": "Test tour",    |
+    "duration": 30,         |   - Dummy Data!
+    "difficulty": "easy"    |
+}
+ * 
+ * - if we log the req.body to console.. we get JavaScript Object
+ * { name: 'Test tour', duration: 30, difficulty: 'easy' }
+ * 
+ * - without app.use() that is without middleware.. we get "undefined" inside console!
+ * 
+ * >>> after sending request on POSTMAN
+ * [via "localhost:8080/api/v1/tours"]
+ *      - we get below response.. 
+{
+  "status": "success",
+  "data": {
+    "tour": {
+      "id": 9,
+      "name": "Test tour",
+      "duration": 30,
+      "difficulty": "easy"
+    }
+  }
+}
+ * 
+ * $ SUMMARY
+ * - this above object will be converted to JSON-string and added to file at last of the tours-array!
+ * 
+ * ! 7. Responding to URL Parameters
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ * (how to define parameters inside URL and also how to read and respond to parameters)
+ * [ex: localhost:8080/api/v1/tours/5] >>> reading tour with "id": 5
+ * 
+ * - localhost:8080/api/v1/tours/5
+ *                               | +---- this '5' is called "variable"
+ * 
+ * ? how to define a route which can accept a variable! 
+ * [code]
+ * ------
+const fs = require("fs");
+const express = require("express");
+
+const app = express();
+
+app.use(express.json());
+
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
+);
+
+// >>> GET all-tours
+app.get("/api/v1/tours", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    results: tours.length,
+    data: {
+      tours: tours,
+    },
+  });
+});
+
+// >>> GET a-tour [with Id]
+app.get("/api/v1/tours/:id", (req, res) => {        // #1
+  // console.log(req.params);
+
+  // const id = req.params.id * 1;         // #2
+  const id = Number(req.params.id)
+  // console.log(id)
+
+  if (id > tours.length) {              // #3
+    return res.status(404).json({
+      status: "fail",                   |
+      message: "id not found!",         |... // #4
+    });
+  }
+
+  const tour = tours.find((element) => element.id === id);  // #5
+  // console.log(tour);
+
+  res.status(200).json({        // - res.json() sends a JSON response
+    status: "success",
+    data: {
+      tour: tour,
+    },
+  });
+});
+
+const port = 8080;
+app.listen(port, () => {
+  console.log(`server up and running on: ${port}`);
+});
+ * 
+ * $ EXPLANATION
+ * 
+ * # 1.
+ * - parameters inside URL (/api/v1/tours/:id)
+ * :id >>> where 'id' is a "variable"
+ * 
+ * - after ":" colon every thing is considered as a variable
+ * (/api/v1/tours/:id/:xy/:yz)
+ *    - here id, xy and yz are variables and.. 
+ *    - every variables has to be filled with data.. while requesting from client-side
+ * 
+ * - if URL is structured like:       /api/v1/tours/:id/:xy/:yz
+ * - then requests has to be sent:    /api/v1/tours/5/3/2
+ * [id = 5, xy = 3, yz = 2]
+ * (if not, error will be thrown)
+ * 
+ * - optional parameters with '?'
+ *    - if URL has been structured like this: /api/v1/tours/:id/:xy?/
+ *    - here ? denotes that xy is an OPTIONAL parameter
+ * (if no value passed.. undefined will be taken)
+ * 
+ * # 2.
+ * - req.params: string-type
+ *    - parameters are requested from URL [that is from client-side]
+ * (hence parameters are put on request!)
+ * 
+ * const id = req.params.id * 1
+ * - [in JS, any string multiplies with 1 >>> will be converted to a number]
+ * 
+ * # 3.
+ * - guard-clause! 
+ * if (id > tours.length) { return ... }
+ *    - this is added to check if there is no "id" passed into URL
+ *       - and will be returned from current operation! 
+ * 
+ * # 4.
+ * - send message to catch error
+ * res.status(404).json({ ... })
+ *    - res.status() is set to '404' >>> represents "Not Found!"
+ *    - res.json({}) is used to send JSON response with "message": "id not found!"
+ * 
+ * # 5.
+ * ? find method
+ * const tour = tours.find((element) => element.id === id)
+ *    - The find() method iterates through the array in ascending order.
+ *      - It calls the provided function for each element until it finds one that satisfies the condition.
+ *        - If such an element is found, it returns that element; otherwise, it returns undefined.
+ * 
+ * simply, it loops on every element in provided array and applies the callback and logic specified inside callback!
+ *    if logic satisfied it returns the 1st element.. else 'undefined' 
+ * [ex]
+const numbers = [4, 9, 16, 25];
+const found = numbers.find(num => num > 10);    | - executes for once.. if it finds one element it will be returned!
+console.log(found); // Output: 16
+ *  
+ * 
+ * $ NOTE
+ * - status-code: 404 || "NOT FOUND!"
+ * 
+ * ! 8. Handling PATCH Requests
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ * - PUT:   server receives entire updated object
+ * - PATCH: server expects only updated properties of an object
+ * 
+ * [code]
+ * ------
+const fs = require("fs");
+const express = require("express");
+
+const app = express();
+
+// middleware
+app.use(express.json());
+
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
+);
+
+// >>> PATCH update-a-tour
+app.patch("/api/v1/tours/:id", (req, res) => {
+  if (Number(req.params.id) > tours.length) {
+    return res.status(404).json({
+      status: "fail",
+      message: "id not found!",
+    });
+  }
+  res.status(200).json({
+    status: "success",
+    data: {
+      tour: "<Updated tour here...>",
+    },
+  });
+});
+
+const port = 8080;
+app.listen(port, () => {
+  console.log(`server up and running on: ${port}`);
+});
+ * 
+ * $ NOTE
+ * - here.. have not implemented complete logic behind updating  
+ * [as we are applying CRUD operations on files but it is not real-world]
+ * 
+ * ? [steps]
+ * ---------
+ * - update properties only.. not an entire object!
+ * [used PATCH here..]
+ * 
+ * - as patch updates only an object inside a resource.. so we send ID as URL-params
+ *    - check if there are any params 
+ * 
+ * - on success.. send a json object! 
+ *    - with JSend formatting!
+ * 
+ * 
+ * ! 9. Handling DELETE Requests
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ * [code]
+ * ------
+const fs = require("fs");
+const express = require("express");
+
+const app = express();
+app.use(express.json());
+
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
+);
+
+// >>> PATCH update a field
+app.patch("/api/v1/tours/:id", (req, res) => {
+  if (Number(req.params.id) > tours.length) {
+    return res.status(404).json({
+      status: "fail",
+      message: "id not found!",
+    });
+  }
+  res.status(200).json({
+    status: "success",
+    data: {
+      tour: "<Updated tour here...>",
+    },
+  });
+});
+
+// >>> DELETE delete a field
+app.delete("/api/v1/tours/:id", (req, res) => {       
+  if (Number(req.params.id) > tours.length) {
+    return res.status(404).json({
+      status: "fail",
+      message: "id not found!",
+    });
+  }
+  res.status(204).json({          
+    status: "success",
+    data: null,             
+  });
+});
+
+const port = 8080;
+app.listen(port, () => {
+  console.log(`server up and running on: ${port}`);
+});
+ * 
+ * - logic is similar to PATCH but HTTP method changes!
+ * [delete]
+ *    - delete a resource with it's id
+ * 
+ * - status code changes to '204': no content
+ * - as there will not be any content (so data is set to null)
+ * 
+ * $ NOTE:
+ * - status-code = 204 || "no content"
+ * 
+ * ! 10. Refactoring Our Routes
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ * - we will separate handler functions from logic
+ * [so that we can export them into separate files] >>> (so that route-handler-logic stays abstracted)
+ * 
+ * - we also will use "route" method
+ * [app.route]
+ * 
+ * [code]
+ * ------
+const fs = require("fs");
+const express = require("express");
+
+const app = express();
+
+// middleware
+app.use(express.json());
+
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
+);
+
+// >>> GET all-tours
+const getAllTours = (req, res) => { ... };
+
+// >>> GET a-tour [with Id]
+const getTour = (req, res) => { ... };
+
+// >>> POST create-a-tour
+const createTour = (req, res) => { ... };
+
+// >>> PATCH update a field
+const updateTour = (req, res) => { ... };
+
+// >>> DELETE delete a field
+const deleteTour = (req, res) => { ... };
+
+// app.get("/api/v1/tours", getAllTours);
+// app.post("/api/v1/tours", createTour);
+// app.get("/api/v1/tours/:id", getTour);
+// app.patch("/api/v1/tours/:id", updateTour);
+// app.delete("/api/v1/tours/:id", deleteTour);
+
+app.route("/api/v1/tours").get(getAllTours).post(createTour);
+app
+  .route("/api/v1/tours/:id")
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
+
+const port = 8080;
+app.listen(port, () => {
+  console.log(`server up and running on: ${port}`);
+});
+ * 
+ * - used app.route() and then chained every HTTP method!
+ * [ex]
+ * ----
+app.route("/api/v1/tours").get(getAllTours).post(createTour);
+app
+  .route("/api/v1/tours/:id")
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
+ * 
+ * - this creates single place to update the route 
+ * [if we changed the resource name..]
+ *    - we can change at single place 
+ * 
+ * 
+ * ! 11. Middleware and the Request-Response Cycle
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-
+ * (how express works: deep dive)
+ * 
+ * >>> essence of EXPRESS development: THE REQ-RES CYCLE!
+ * 
+ *                                              middleware-stack 
+ *                                                     |
+ *                         + ------------------------- + -------------------------- +
+ *                         |                                                        |
+ * INCOMING REQ +---------- middleware  ----------- middleware ----------- middleware ----------=> RESPONSE
+ *      |                   .....                   .....                  .....
+ * REQ + RES object         next()                  next()                 res.send()
+ *                            |                       |                        |
+ * ex:                    parsing body              logging              setting headers                          
+ *              
+ * $ [explanation]
+ * - express app receives a request when someone hit a URL
+ *    - for which it then creates a request and response object
+ * [then that data will be used and processed.. in order to send a response]
+ * 
+ * - to process data.. we use MIDDLEWARES in express
+ *    - which can manipulate req and res object!
+ * [middlewares does not always have to be just about req and res object]
+ * 
+ * $ NOTE
+ * - we already used middleware: used express.json() to get access to the request.body
+ * 
+ * * in express everything is a MIDDLEWARE
+ * [as route / request handlers works as a middleware fns]
+ * 
+ * - middleware is a function.. executed in the middle of receiving request and sending a response!
+ * [examples]
+ * ----------
+ *    - 1. middleware fns are used to parse request-body [express.json() >>> helps in that!]
+ *    - 2. logging.. setting headers 
+ * 
+ * - every middleware together are called middleware stack!
+ *    - order of every middleware is important
+ * 
+ * - req and res object that were created will go through every middleware..
+ *    - inside middleware stack and where these objects were processed!
+ * 
+ * - at end of every middleware.. "next" function will be called
+ *    - calling "next" takes req and res objects to next middleware
+ * [similarly like.. data which goes through a pipeline] 
+ * 
+ * - last middleware where "next" is not called.. but we send response to client
+ *    - we call res.send instead of next inside last middleware! 
+ * 
+ * $ NOTE
+ * use // => use method 
+ *    - on "app"
+ * [app.use]
+ * 
+ * - middlewares applies to every single request made
+ *    - route handlers are also middlewares but they apply to a certain URL!
+ * 
+ *  => this is how express works !
+ * 
+ * ! 12. Creating Our Own Middleware
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ * 
+ * - use method is used on "app" to use middleware!
+ *    - every middleware takes in three arguments.. [req, res, next]
+ * [code]
+ * ------
+const fs = require("fs");
+const express = require("express");
+
+const app = express();
+
+// >>> middlewares
+app.use(express.json());
+
+app.use((req, res, next) => {           // #1
+  console.log("Hi! From middleware")
+  next()
+})
+
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
+);
+
+// >>> ROUTE-HANDLERS
+const getAllTours = (req, res) => { ... };
+const getTour = (req, res) => { ... };
+const createTour = (req, res) => { ... };
+const updateTour = (req, res) => { ... };
+const deleteTour = (req, res) => { ... };
+
+app.route("/api/v1/tours").get(getAllTours).post(createTour);
+app
+  .route("/api/v1/tours/:id")
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
+
+const port = 8080;
+app.listen(port, () => {
+  console.log(`server up and running on: ${port}`);
+});
+ * 
+ * # 1.
+ * - app.use((req, res, next) => { ... })
+ *    - every middleware has access req and res objects
+ *    - next: function has to be called else req/res objects does not react next middlewares
+ * 
+ * [code]
+ * ------
+app.route("/api/v1/tours").get(getAllTours).post(createTour);
+
+app.use((req, res, next) => {           // #2
+  console.log("Hi! From middleware")
+  next()
+})
+
+app
+  .route("/api/v1/tours/:id")
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
+ * 
+ * # 2.
+ * - middleware after request-response cycle!
+ *    - requests cannot get access to middleware if it (middleware) is placed after we send response
+ * [once response is send req-res cycle will be completed]
+ * 
+ * $ NOTE:
+ * - middleware applies to each and every request 
+ * - middlewares shall be called before sending a response [means before ending req-res cycle]
+ *     - simply middleware must be before route handler
+ * - so we define middlewares at top before req/route handlers
+ * 
+ * 
+ * ! 13. Using 3rd-Party Middleware
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ * (3rd party middleware fn called: "MORGAN")
+ * 
+ * * Morgan
+ *    - popular 3rd-party logging middleware!
+ * [middleware allows us to view req-data inside console] 
+ * 
+ * >>> official definition
+ * - Concise output colored by response status for development use. 
+ *    - The :status token will be colored red for server error codes, yellow for client error codes, 
+ *        - cyan for redirection codes, and uncolored for all other codes. 
+ * - :method :url :status :response-time ms - :res[content-length]
+ * 
+ * >>> simply.. log will be like this...
+ * - [used to log HTTP method used, URL used for request, status code, time took to respond, size of response (bytes, kilobytes..)]
+ * 
+ * - install:
+ *    => npm i morgan
+ * [code]
+ * ------
+const fs = require("fs");
+const express = require("express");
+const morgan = require("morgan");
+
+const app = express();
+
+// - body-parser
+app.use(express.json());
+
+// >>> 3rd-party middlewares
+app.use(morgan("dev"))          // #1
+
+// - defined middlewares
+app.use((req, res, next) => {           
+  console.log("Hi! From middleware")
+  next()
+})
+
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
+);
+
+// - ROUTE-HANDLERS
+const getAllTours = (req, res) => { ... };
+const getTour = (req, res) => { ... };
+const createTour = (req, res) => { ... };
+const updateTour = (req, res) => { ... };
+const deleteTour = (req, res) => { ... };
+
+// - routes
+app.route("/api/v1/tours").get(getAllTours).post(createTour);
+app
+  .route("/api/v1/tours/:id")
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
+
+// - listening to server 
+const port = 8080;
+app.listen(port, () => {
+  console.log(`server up and running on: ${port}`);
+});
+ * 
+ * 
+ * >>> [morgan]
+ * - this is basically a middleware
+ *    - behind the scenes it uses: [req, res, next]
+ * [but everything will be abstracted]
+ * 
+ * - it takes flags as arguments such as: [combined, common, dev, short, tiny] 
+ *    - based on these arguments log will be formatted!
+ * 
+ * - the console-log we get [when used argument: "dev"]
+ * GET /api/v1/tours 200 60.443 ms - 8577
+ * 
+ * 
+ * ! 14. Implementing the "Users" Routes
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ * 
+ * - implemented structure of user-routes and route-handlers
+ * [but not logic inside them!]
+ * 
+ * [code]
+ * ------
+/////////////////////////////////////////////////
+// >>> 2.2 user-route-handlers
+
+const getAllUsers = (re1, res) => {
+  res.status(500).json({
+    status: "error",
+    message: "This route is not yet defined!",
+  });
+};
+const getUser = (re1, res) => {
+  res.status(500).json({
+    status: "error",
+    message: "This route is not yet defined!",
+  });
+};
+const createUser = (re1, res) => {
+  res.status(500).json({
+    status: "error",
+    message: "This route is not yet defined!",
+  });
+};
+const updateUser = (re1, res) => {
+  res.status(500).json({
+    status: "error",
+    message: "This route is not yet defined!",
+  });
+};
+const deleteUser = (re1, res) => {
+  res.status(500).json({
+    status: "error",
+    message: "This route is not yet defined!",
+  });
+};
+
+/////////////////////////////////////////////////
+// >>> 3.2 USER-ROUTES
+
+app.route("/api/v1/users").get(getAllUsers).post(createUser);
+
+app
+  .route("/api/v1/users/:id")
+  .get(getUser)
+  .patch(updateUser)
+  .delete(deleteUser);
+ * 
+ * 
+ * - just implemented structure of routes!
+ * 
+ * $ NOTE
+ * - status-code: 500 || INTERNAL SERVER ERROR  => message: "this route is not yet implemented!"
+ * 
+ * 
+ * ! 15. Creating and Mounting Multiple Routers
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=
+ * (create multiple routers and we use a process called "MOUNTING")
+ * 
+ * - ultimate-goal:
+ *    - separate code into multiple files 
+ * [separate files for "routes": {tours and users} and another file for "route-handlers": {tours and users}]
+ * 
+ * initially.. 
+ * - but now we need to create separate router for each resources [tours, users]
+ * 
+ * [code-before]
+ * -------------
+// >>> 3.1 TOUR-ROUTES
+app.route("/api/v1/tours").get(getAllTours).post(createTour);
+app
+  .route("/api/v1/tours/:id")
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
+
+// >>> 3.2 USER-ROUTES
+app.route("/api/v1/users").get(getAllUsers).post(createUser);
+
+app
+  .route("/api/v1/users/:id")
+  .get(getUser)
+  .patch(updateUser)
+  .delete(deleteUser);
+ * 
+ * - we need to separate these routes into diff files
+ *    [separate file for tour-routes and user-routes]
+ * 
+ * - but they are on the same router called "app"
+ *    - so we need to separate the router [at-first] 
+ * 
+ * [code-after]
+ * ------------
+
+ * 
+ * 
+ * 
+ * 
+ * 
+ * ? connect new router with our application ?
  * 
  * 
  * 
@@ -294,45 +1115,6 @@ send(nextPage)
  * 
  * 
  * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
  * 
  * ! 2. Middleware and the Request-Response Cycle
  * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
