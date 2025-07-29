@@ -1,5 +1,5 @@
-// ! Express start building Natours API !
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// ! Express start building Natours API - PART(1) !
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 /**
  * 
  * ! 1. What is Express?
@@ -117,7 +117,7 @@ app.post("/", (req, res) => {
  * 
  * 
  * $ NOTE
- * - status-code = 200 || 'ok'
+ * - status-code = 200 >>> 'ok'
  * 
  * 
  * ! 4. APIs and RESTful API Design
@@ -604,7 +604,7 @@ console.log(found); // Output: 16
  *  
  * 
  * $ NOTE
- * - status-code: 404 || "NOT FOUND!"
+ * - status-code: 404 >>> "NOT FOUND!"
  * 
  * ! 8. Handling PATCH Requests
  * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -719,7 +719,7 @@ app.listen(port, () => {
  * - as there will not be any content (so data is set to null)
  * 
  * $ NOTE:
- * - status-code = 204 || "no content"
+ * - status-code = 204 >>> "no content"
  * 
  * ! 10. Refactoring Our Routes
  * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -1060,7 +1060,8 @@ app
  * - just implemented structure of routes!
  * 
  * $ NOTE
- * - status-code: 500 || INTERNAL SERVER ERROR  => message: "this route is not yet implemented!"
+ * - status-code: 500 >>> INTERNAL SERVER ERROR  
+ *    - message: "this route is not yet implemented!"
  * 
  * 
  * ! 15. Creating and Mounting Multiple Routers
@@ -1071,8 +1072,8 @@ app
  *    - separate code into multiple files 
  * [separate files for "routes": {tours and users} and another file for "route-handlers": {tours and users}]
  * 
- * initially.. 
- * - but now we need to create separate router for each resources [tours, users]
+ * but initially.. 
+ * - we need to create separate router for each resources: [tours, users]
  * 
  * [code-before]
  * -------------
@@ -1101,241 +1102,363 @@ app
  * 
  * [code-after]
  * ------------
+// - 3. ROUTES
+// >>> 3.1 TOUR-ROUTES
+const tourRouter = express.Router();    // #1
 
+// >>> 3.2 USER-ROUTES
+const userRouter = express.Router();
+
+app.use("/api/v1/tours", tourRouter);   // #2
+app.use("/api/v1/users", userRouter);
+
+tourRouter.route("/").get(getAllTours).post(createTour);                      |
+tourRouter.route("/:id").get(getTour).patch(updateTour).delete(deleteTour);   | ... // #3
+
+userRouter.route("/").get(getAllUsers).post(createUser);
+userRouter.route("/:id").get(getUser).patch(updateUser).delete(deleteUser);
  * 
+ * # 1. sub-app
+ * const tourRouter = express.Router()
+ *    - creates new router for tour related routes
+ *    - it is like a mini-application for route: {/api/v1/tours}
  * 
+ * [created routes separately for "tours" and "users"]
+ *    therefore there are two mini-apps for tours and users
  * 
- * 
+ * # 2. connect-new-router-to-express(app)
+ * app.use("/api/v1/tours", tourRouter)
  * 
  * ? connect new router with our application ?
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * ! 2. Middleware and the Request-Response Cycle
- * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- */
+ * - tourRouter and userRouter are middlewares
+ *    - and we will use that middleware on specific route: "/spi/v1/tours" and "/api/v1/users"
+ * 
+ * * Mounting - router
+ *    - mounts (attaches) "userRouter" and "tourRouter" to main Express-application
+ * 
+ * >>> Flow of application:
+ * - when request hits "app"
+ * - app.use("/api/v1/tours", tourRouter) => express forwards request to "tourRouter"
+ * - inside "tourRouter".. 
+ *    - if it matches "/"     => then it will run "getAllTours"
+ *    - if it matches "/:id"  => then it will run "getTour" gets-a-tour with id
+ * - controller [getAllTours and getTour] processes data and sends back the response to client!
+ * 
+ * => next lecture
+ * >>> refactor application [separate to diff folders]
+ * 
+ * ! 16. A Better File Structure
+ * -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ * 
+ * (code separation: creating mini-apps)
+ * 
+ * ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ * # PART - 1:
+ * -----------  
+ * SEPARATE ROUTES from app.js
+ * 
+ * - created "routes" in which.. 
+ *    - created new files ["userRoutes" and "tourRoutes"] 
+ *    [to separate the code from App.js into those files..]
+ * 
+ * [code-userRouter]
+ * -----------------
+const express = require("express");
+
+// >>> Controllers (functions handling requests)
+const getAllUsers = (req, res) => { ... };
+const getUser = (req, res) => { ... };
+const createUser = (req, res) => { ... };
+const updateUser = (req, res) => { ... };
+const deleteUser = (req, res) => { ... };
+
+// >>> 1) Create a new router object
+const router = express.Router();        // #1
+
+// >>> 2) Define routes inside the router
+router.route("/")               // #2.1
+  .get(getAllUsers)
+  .post(createUser);            // #2.2
+
+router.route("/:id")
+  .get(getUser)
+  .patch(updateUser)
+  .delete(deleteUser);
+
+// >>> 3) Export the router
+module.exports = router;        // #3
+ * 
+ * ... similarly for "tourRoutes" file also ...
+ * 
+ * [process]
+ * - here.. we created a "router" object 
+ * - attached routes ("/") and ("/:id")
+ * - attached route-handlers get, post etc., HTTP methods
+ * 
+ * >>> then the total code looks like this!
+ * [code]
+ * ------
+router.route("/").get(getAllUsers).post(createUser);
+router.route("/:id").get(getUser).patch(updateUser).delete(deleteUser);
+ * 
+ * - lastly the total object with routes and route-handlers attached was exported!
+ * 
+ * [app.js]
+ * - importing exported "router" as "tourRouter" and "userRouter" from their respective "tourRoutes" and "userRoutes" files
+ * [code]
+ * ------
+// >>> routers imported ...
+const tourRouter = require("./routes/tourRoutes");
+const userRouter = require("./routes/userRoutes");
+
+// - and using them inside middlewares to recognize the 1st part of URL ["/api/v1/tours" and "/api/v1/users"]
+// >>> separate middlewares for "tourRouter" and "userRouter"
+app.use("/api/v1/tours", tourRouter);
+app.use("/api/v1/users", userRouter);
+ * 
+ * $ SUMMARY
+ * - You create a router object → attach routes and handlers to it → export the whole object.. [and imported into "app.js"]
+ * - in this way.. we have created sub-mini-applications "tour-app" and "user-app"
+ * 
+ * ? why we had separated code into their respective mini-apps ?
+ * ---
+ * - before separation every code contained inside app.js
+ *    * but app.js is for only used for middleware declarations!
+ * 
+ * ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ * # PART - 2
+ * ----------
+ * SEPARATE ROUTE-HANDLERS for respective routes!
+ * 
+ * - create "controllers" but not handlers folder
+ * [convention: controllers-folder convention >>> which is followed inside MVC "Model-View-Controller"]
+ * 
+ * [tourController.js]
+ * -------------------
+const fs = require("fs");
+
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, "utf-8")
+);
+
+exports.getAllTours = (req, res) => { ... }   |
+exports.getTour = (req, res) => { ... }       |
+exports.createTour = (req, res) => { ... }    | - all fns exports here!
+exports.updateTour = (req, res) => { ... }    |
+exports.deleteTour = (req, res) => { ... }    |
+ * 
+ * - exported from "tourController" file 
+ * 
+ * [import-into-tourRoutes]
+ * ------------------------
+const express = require("express");
+
+// >>> contains route-handler fns
+const tourController = require("./../controllers/tourController");
+
+const router = express.Router();
+
+router
+  .route("/")
+  .get(tourController.getAllTours)
+  .post(tourController.createTour);
+router
+  .route("/:id")
+  .get(tourController.getTour)
+  .patch(tourController.updateTour)
+  .delete(tourController.deleteTour);
+
+module.exports = router;
+ * 
+ * - imported into "tourRoutes" file
+ * 
+ * ? how exports works?
+ * ---
+ * - inside exports file we have: [exports.getAllTours = (req, res) => { ... }] and other exports.. 
+ * - here we are attaching functions / properties to "exports" object
+ * [inside tourController looks like..]
+ * ------------------------------------
+exports = {
+  getAllTours: [Function getAllTours],
+  getTour: [Function getTour],
+  createTour: [Function createTour],
+  updateTour: [Function updateTour],
+  deleteTour: [Function deleteTour]
+};
+ * 
+ * - BTS, when Node runs "tourController" file.. all exports will be assigned to..
+ *    - [module.exports = exports] automatically 
+ * [so whatever we attached to exports.. gets exported as a single object]
+ * 
+ * ? how imports works ?
+ * ---
+ * - inside tourRouter.js
+const tourController = require("./../controllers/tourController");
+
+router
+  .route("/")
+  .get(tourController.getAllTours)
+  .post(tourController.createTour);
+
+// - [tourController object looks like..]
+tourController = {
+  getAllTours: [Function getAllTours],
+  getTour: [Function getTour],
+  createTour: [Function createTour],
+  updateTour: [Function updateTour],
+  deleteTour: [Function deleteTour]
+};
+ * 
+ * - since we exported an object with all functions as properties, "tourController" becomes that same object
+ * 
+ * $ SUMMARY:
+ * - exports here is also an object, and you attached controller functions to it → then exported it
+ * - where.. we import the whole object and use its properties.
+ * 
+ * >>> therefore.. similar for userRoutes and userController files
+ * 
+ * ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ * # PART - 3
+ * CREATE server.js FILE 
+ * 
+ * ? why ?
+ * ---
+ * - it is a good practice to have everything related to express in one file.. 
+ *    - and everything related to server in another main file!
+ * 
+ * [server]
+ * - which will be the starting file.. where we also listens to the server
+ *    - server related code inside app.js is only.. 
+ * [code]
+ * ------
+const port = 8080;
+app.listen(port, () => {
+  console.log(`server up and running on: ${port}`);
+});
+ * 
+ * - so create server.js in main-root folder of project and insert above code into it!
+ *    - so export "app" from app.js.. so that server gets access to "app"
+ * [we have everything related to application and it's configuration in one STANDALONE file: app.js]
+ * 
+ * - we will have things that are not related to express inside server.js
+ *    - like database configurations, error handlers, environment variables will be inside server.js
+ * [acts like an entry point]
+ * 
+ * - as server is the entry point and we have to listen from server.js file
+ *    - so we start server with "nodemon server.js" [inside terminal]
+ * 
+ * >>> package.json configuration
+ * - modify the "scripts" property!
+ * 
+ * [package.json]
+ * --------------
+"scripts": {
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "start": "nodemon server.js"
+},
+ * 
+ * - so to start server we just need "npm start" inside terminal
+ * 
+ * NOW..
+ * * FLOW OF APPLICATION
+ * ---
+ * - SERVER => APP.JS => ROUTES => ROUTE-HANDLERS
+ * 
+ * [MODIFIED-CODE]
+ * ---------------
+ * >>> server.js
+ * ---
+const app = require("./app")
+
+// - 1. LISTENING TO SERVER / START SERVER
+const port = 8080;
+app.listen(port, () => {
+  console.log(`server up and running on: ${port}`);
+});
+ * 
+ * >>> app.js
+ * --- [we have everything related to application and it's configuration in one STANDALONE file: app.js]
+const express = require("express");
+const morgan = require("morgan");
+
+// routers
+const tourRouter = require("./routes/tourRoutes");
+const userRouter = require("./routes/userRoutes");
+
+const app = express();
+
+// - 2.1 MIDDLEWARES
+// 3rd-party middlewares
+app.use(morgan("dev"));
+
+// body-parser
+app.use(express.json());
+
+// defined middlewares
+app.use((req, res, next) => {
+  console.log("Hello from middleware");
+  next();
+});
+
+// - 2.2 routes
+app.use("/api/v1/tours", tourRouter);
+app.use("/api/v1/users", userRouter);
+
+module.exports = app
+ * 
+ * >>> routers
+ * >>> [tourRoutes.js]
+ * ---
+const express = require("express");
+
+// - 3.0 contains route-handler fns
+const tourController = require("./../controllers/tourController");
+
+const router = express.Router();
+
+// - 3.1 route-handlers
+router
+  .route("/")
+  .get(tourController.getAllTours)
+  .post(tourController.createTour);
+router
+  .route("/:id")
+  .get(tourController.getTour)
+  .patch(tourController.updateTour)
+  .delete(tourController.deleteTour);
+
+module.exports = router;
+ * 
+ * >>> route-handlers
+ * >>> tourController.js
+ * ---
+const fs = require("fs");
+
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, "utf-8")
+);
+
+// GET all-tours!
+exports.getAllTours = (req, res) => { ... };
+
+// GET a-tour! [with Id]
+exports.getTour = (req, res) => { ... };
+
+// POST create-a-tour!
+exports.createTour = (req, res) => { ... };
+
+// PATCH update-a-field!
+exports.updateTour = (req, res) => { ... };
+
+// DELETE a-field!
+exports.deleteTour = (req, res) => { ... };
+ * 
+ * 
+ * 
+ * 
+ * ! PART - (2) !
+ * => CONTINUES..
+ * 
+ * 
+ * 
+ * */
